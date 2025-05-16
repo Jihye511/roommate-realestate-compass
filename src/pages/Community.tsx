@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { Search } from 'lucide-react';
 
 interface Post {
   id: number;
@@ -13,7 +14,6 @@ interface Post {
   content: string;
   author: string;
   date: string;
-  likes: number;
   comments: number;
   category: string;
 }
@@ -25,7 +25,6 @@ const samplePosts: Post[] = [
     content: "최근 강남 지역 아파트들이 3개월 만에 10% 상승했습니다. 어떻게 생각하시나요?",
     author: "부동산전문가",
     date: "2023-05-15",
-    likes: 24,
     comments: 13,
     category: "시장동향"
   },
@@ -35,7 +34,6 @@ const samplePosts: Post[] = [
     content: "최근 전세 사기가 많아지고 있어 제가 알고 있는 주의사항을 공유합니다...",
     author: "계약달인",
     date: "2023-05-10",
-    likes: 56,
     comments: 32,
     category: "정보공유"
   },
@@ -45,7 +43,6 @@ const samplePosts: Post[] = [
     content: "곧 결혼을 앞두고 있는데 내집마련 어떻게 준비하셨는지 경험 공유 부탁드려요.",
     author: "예비신랑",
     date: "2023-05-08",
-    likes: 42,
     comments: 28,
     category: "질문"
   },
@@ -55,7 +52,6 @@ const samplePosts: Post[] = [
     content: "오늘 발표된 정부의 부동산 정책에 대해 논의해봤으면 합니다.",
     author: "정책연구가",
     date: "2023-05-05",
-    likes: 38,
     comments: 45,
     category: "정책토론"
   },
@@ -65,7 +61,6 @@ const samplePosts: Post[] = [
     content: "투자 목적으로 매물을 알아보고 있는데 역세권과 학세권 중 어떤 것이 더 좋을지 고민입니다.",
     author: "초보투자자",
     date: "2023-05-03",
-    likes: 19,
     comments: 23,
     category: "질문"
   },
@@ -75,7 +70,6 @@ const samplePosts: Post[] = [
     content: "최근 아파트 리모델링을 마쳤습니다. 견적과 진행 과정에서 알게 된 팁을 공유합니다.",
     author: "인테리어고수",
     date: "2023-04-28",
-    likes: 67,
     comments: 31,
     category: "정보공유"
   }
@@ -113,6 +107,12 @@ const Community = () => {
     setIsViewModalOpen(true);
   };
 
+  // 검색 수행
+  const handleSearch = () => {
+    console.log('Searching for:', searchTerm);
+    // 검색 로직은 실시간으로 이미 수행중이지만 실제 앱에서는 여기서 API 호출을 할 수 있음
+  };
+
   // 새 게시글 작성
   const handleWritePost = () => {
     setIsWriteModalOpen(true);
@@ -128,7 +128,6 @@ const Community = () => {
       content: newPost.content,
       author: "현재사용자",
       date: new Date().toISOString().split('T')[0],
-      likes: 0,
       comments: 0,
       category: newPost.category
     };
@@ -145,14 +144,25 @@ const Community = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <h1 className="text-3xl font-bold mb-4 md:mb-0">부동산 커뮤니티</h1>
-            <div className="flex space-x-2 w-full md:w-auto">
-              <Input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="검색어를 입력하세요"
-                className="w-full md:w-64"
-              />
-              <Button onClick={handleWritePost}>글쓰기</Button>
+            <div className="flex flex-col w-full md:w-auto gap-2">
+              <div className="flex space-x-2 w-full">
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="검색어를 입력하세요"
+                  className="w-full md:w-64"
+                />
+                <Button onClick={handleSearch} className="bg-sky-500 hover:bg-sky-600">
+                  <Search size={18} />
+                  <span className="ml-1">검색</span>
+                </Button>
+              </div>
+              <Button 
+                onClick={handleWritePost} 
+                className="w-full md:w-[calc(100%+48px)] bg-emerald-500 hover:bg-emerald-600"
+              >
+                글쓰기
+              </Button>
             </div>
           </div>
 
@@ -185,8 +195,7 @@ const Community = () => {
                           <span className="mx-2">•</span>
                           <span>{post.date}</span>
                         </div>
-                        <div className="flex space-x-3">
-                          <span>👍 {post.likes}</span>
+                        <div>
                           <span>💬 {post.comments}</span>
                         </div>
                       </div>
@@ -218,8 +227,7 @@ const Community = () => {
                     <span className="mx-2">•</span>
                     <span className="px-2 py-1 bg-gray-100 rounded-full">{selectedPost.category}</span>
                   </div>
-                  <div className="flex space-x-3">
-                    <span>👍 {selectedPost.likes}</span>
+                  <div>
                     <span>💬 {selectedPost.comments}</span>
                   </div>
                 </div>
@@ -301,7 +309,7 @@ const Community = () => {
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setIsWriteModalOpen(false)}>취소</Button>
-            <Button onClick={handleSavePost}>등록하기</Button>
+            <Button onClick={handleSavePost} className="bg-emerald-500 hover:bg-emerald-600">등록하기</Button>
           </div>
         </DialogContent>
       </Dialog>
