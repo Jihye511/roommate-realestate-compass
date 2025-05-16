@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Search } from 'lucide-react';
 
 interface Post {
   id: number;
@@ -110,7 +108,7 @@ const Community = () => {
   // 검색 수행
   const handleSearch = () => {
     console.log('Searching for:', searchTerm);
-    // 검색 로직은 실시간으로 이미 수행중이지만 실제 앱에서는 여기서 API 호출을 할 수 있음
+    // 검색 로직은 실시간으로 이미 수행중이지만 실제 앱에서는 여기서 API 호출을 할 수 있��
   };
 
   // 새 게시글 작성
@@ -145,21 +143,17 @@ const Community = () => {
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <h1 className="text-3xl font-bold mb-4 md:mb-0">부동산 커뮤니티</h1>
             <div className="flex flex-col w-full md:w-auto gap-2">
-              <div className="flex space-x-2 w-full">
+              <div className="flex w-full">
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="검색어를 입력하세요"
                   className="w-full md:w-64"
                 />
-                <Button onClick={handleSearch} className="bg-sky-500 hover:bg-sky-600">
-                  <Search size={18} />
-                  <span className="ml-1">검색</span>
-                </Button>
               </div>
               <Button 
                 onClick={handleWritePost} 
-                className="w-full md:w-[calc(100%+48px)] bg-emerald-500 hover:bg-emerald-600"
+                className="w-auto bg-emerald-500 hover:bg-emerald-600"
               >
                 글쓰기
               </Button>

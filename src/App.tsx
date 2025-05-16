@@ -10,6 +10,8 @@ import Signup from "./pages/Signup";
 import Map from "./pages/Map";
 import Calculator from "./pages/Calculator";
 import Community from "./pages/Community";
+import Admin from "./pages/Admin";
+import MyPage from "./pages/MyPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/map" element={<Map />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/community" element={<Community />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/mypage" element={<MyPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

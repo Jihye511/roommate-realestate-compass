@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Map as MapIcon, Calculator, Users, User, ArrowRight, Search } from 'lucide-react';
+import { Home, Map as MapIcon, Calculator, Users, User, ArrowRight, Search, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +16,7 @@ interface Property {
   size: string;
   type: string;
   imageUrl: string;
+  isFavorite?: boolean;
 }
 
 const sampleProperties: Property[] = [
@@ -77,6 +77,7 @@ const Map = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [showAIResults, setShowAIResults] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   
   // New state for region toggles in AI recommendation
   const [selectedRegion, setSelectedRegion] = useState({
@@ -97,24 +98,25 @@ const Map = () => {
     size: "소형 (20평 이하)",
   });
 
-  const handleAddressSearch = () => {
-    console.log('Address search:', { city, district, dong });
-    // In a real app, this would filter properties based on address
-  };
-
-  const handleApartmentSearch = () => {
-    console.log('Apartment search:', searchApartment);
-    // In a real app, this would filter properties based on apartment name
-  };
-
-  const handlePropertyClick = (property: Property) => {
-    setSelectedProperty(property);
-  };
-
-  const handleAISubmit = () => {
-    console.log('AI preferences:', { region: selectedRegion, ...aiPreferences });
-    setShowAIDialog(false);
-    setShowAIResults(true);
+  const toggleFavorite = (property: Property, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation(); // Prevent triggering property selection
+    }
+    
+    const updatedProperties = properties.map(p => 
+      p.id === property.id ? { ...p, isFavorite: !p.isFavorite } : p
+    );
+    
+    setProperties(updatedProperties);
+    
+    // Update favorites list
+    if (!property.isFavorite) {
+      // Add to favorites
+      setFavorites([...favorites, { ...property, isFavorite: true }]);
+    } else {
+      // Remove from favorites
+      setFavorites(favorites.filter(f => f.id !== property.id));
+    }
   };
 
   const aiRecommendedProperties = [
@@ -164,6 +166,26 @@ const Map = () => {
     '마포구': ['망원동', '합정동', '상암동'],
   };
 
+  const handleAddressSearch = () => {
+    console.log('Address search:', { city, district, dong });
+    // In a real app, this would filter properties based on address
+  };
+
+  const handleApartmentSearch = () => {
+    console.log('Apartment search:', searchApartment);
+    // In a real app, this would filter properties based on apartment name
+  };
+
+  const handlePropertyClick = (property: Property) => {
+    setSelectedProperty(property);
+  };
+
+  const handleAISubmit = () => {
+    console.log('AI preferences:', { region: selectedRegion, ...aiPreferences });
+    setShowAIDialog(false);
+    setShowAIResults(true);
+  };
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
@@ -198,69 +220,79 @@ const Map = () => {
           {/* Search panel */}
           <div className="w-80 bg-white shadow-lg overflow-y-auto">
             <div className="p-4">
-              <h2 className="text-xl font-semibold mb-4 text-emerald-700">검색</h2>
+              <h2 className="text-xl font-semibold mb-4 text-emerald-700">
+                {showFavorites ? '찜 목록' : '검색'}
+              </h2>
               
-              {/* Address search */}
-              <div className="mb-6">
-                <h3 className="font-medium mb-2 text-sky-700">지역으로 검색</h3>
-                <div className="space-y-2">
-                  <Select onValueChange={setCity}>
-                    <SelectTrigger className="border-emerald-300 focus:ring-emerald-500">
-                      <SelectValue placeholder="시 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="seoul">서울특별시</SelectItem>
-                      <SelectItem value="busan">부산광역시</SelectItem>
-                      <SelectItem value="incheon">인천광역시</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {!showFavorites && (
+                <>
+                  {/* Address search */}
+                  <div className="mb-6">
+                    <h3 className="font-medium mb-2 text-sky-700">지역으로 검색</h3>
+                    <div className="space-y-2">
+                      <Select onValueChange={setCity}>
+                        <SelectTrigger className="border-emerald-300 focus:ring-emerald-500">
+                          <SelectValue placeholder="시 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="seoul">서울특별시</SelectItem>
+                          <SelectItem value="busan">부산광역시</SelectItem>
+                          <SelectItem value="incheon">인천광역시</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                  <Select onValueChange={setDistrict}>
-                    <SelectTrigger className="border-emerald-300 focus:ring-emerald-500">
-                      <SelectValue placeholder="구 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gangnam">강남구</SelectItem>
-                      <SelectItem value="seocho">서초구</SelectItem>
-                      <SelectItem value="songpa">송파구</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <Select onValueChange={setDistrict}>
+                        <SelectTrigger className="border-emerald-300 focus:ring-emerald-500">
+                          <SelectValue placeholder="구 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gangnam">강남구</SelectItem>
+                          <SelectItem value="seocho">서초구</SelectItem>
+                          <SelectItem value="songpa">송파구</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                  <Select onValueChange={setDong}>
-                    <SelectTrigger className="border-emerald-300 focus:ring-emerald-500">
-                      <SelectValue placeholder="동 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="apgujeong">압구정동</SelectItem>
-                      <SelectItem value="cheongdam">청담동</SelectItem>
-                      <SelectItem value="samseong">삼성동</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <Select onValueChange={setDong}>
+                        <SelectTrigger className="border-emerald-300 focus:ring-emerald-500">
+                          <SelectValue placeholder="동 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="apgujeong">압구정동</SelectItem>
+                          <SelectItem value="cheongdam">청담동</SelectItem>
+                          <SelectItem value="samseong">삼성동</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                  <Button onClick={handleAddressSearch} className="w-full bg-emerald-500 hover:bg-emerald-600">검색</Button>
-                </div>
-              </div>
-              
-              {/* Apartment search */}
-              <div className="mb-6">
-                <h3 className="font-medium mb-2 text-sky-700">아파트로 검색</h3>
-                <div className="flex space-x-2">
-                  <Input
-                    value={searchApartment}
-                    onChange={(e) => setSearchApartment(e.target.value)}
-                    placeholder="아파트 이름을 입력하세요"
-                    className="border-emerald-300 focus:ring-emerald-500"
-                  />
-                  <Button onClick={handleApartmentSearch} className="bg-emerald-500 hover:bg-emerald-600">검색</Button>
-                </div>
-              </div>
+                      <Button onClick={handleAddressSearch} className="w-full bg-emerald-500 hover:bg-emerald-600">검색</Button>
+                    </div>
+                  </div>
+                  
+                  {/* Apartment search */}
+                  <div className="mb-6">
+                    <h3 className="font-medium mb-2 text-sky-700">아파트로 검색</h3>
+                    <div className="flex space-x-2">
+                      <Input
+                        value={searchApartment}
+                        onChange={(e) => setSearchApartment(e.target.value)}
+                        placeholder="아파트 이름을 입력하세요"
+                        className="border-emerald-300 focus:ring-emerald-500"
+                      />
+                      <Button onClick={handleApartmentSearch} className="bg-emerald-500 hover:bg-emerald-600">검색</Button>
+                    </div>
+                  </div>
+                </>
+              )}
 
-              {/* Search results */}
+              {/* Search results or Favorites list */}
               <div>
-                <h3 className="font-medium mb-2 text-sky-700">{showAIResults ? 'AI 추천 물건' : '검색 결과'}</h3>
+                <h3 className="font-medium mb-2 text-sky-700">
+                  {showFavorites 
+                    ? '찜한 매물' 
+                    : (showAIResults ? 'AI 추천 물건' : '검색 결과')}
+                </h3>
                 <div className="space-y-4">
-                  {showAIResults 
-                    ? aiRecommendedProperties.map((property) => (
+                  {showFavorites 
+                    ? favorites.map((property) => (
                         <div
                           key={property.id}
                           className={`flex border rounded-lg p-3 cursor-pointer hover:bg-gray-50 ${selectedProperty?.id === property.id ? 'border-emerald-500 bg-emerald-50' : ''}`}
@@ -271,35 +303,77 @@ const Map = () => {
                             alt={property.name}
                             className="w-16 h-16 rounded object-cover mr-3"
                           />
-                          <div>
-                            <div className="flex items-center">
-                              <h4 className="font-medium text-emerald-700">{property.name}</h4>
-                              <span className="ml-2 bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">AI {property.aiScore}</span>
-                            </div>
-                            <p className="text-sm text-gray-600">{property.address}</p>
-                            <p className="text-sm font-semibold text-sky-600">{property.price}</p>
-                          </div>
-                        </div>
-                      ))
-                    : properties.map((property) => (
-                        <div
-                          key={property.id}
-                          className={`flex border rounded-lg p-3 cursor-pointer hover:bg-gray-50 ${selectedProperty?.id === property.id ? 'border-emerald-500 bg-emerald-50' : ''}`}
-                          onClick={() => handlePropertyClick(property)}
-                        >
-                          <img
-                            src={property.imageUrl}
-                            alt={property.name}
-                            className="w-16 h-16 rounded object-cover mr-3"
-                          />
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-medium text-emerald-700">{property.name}</h4>
                             <p className="text-sm text-gray-600">{property.address}</p>
                             <p className="text-sm font-semibold text-sky-600">{property.price}</p>
                           </div>
+                          <button 
+                            onClick={(e) => toggleFavorite(property, e)}
+                            className="ml-2 text-red-500 focus:outline-none"
+                          >
+                            <Heart className="w-5 h-5" fill="currentColor" />
+                          </button>
                         </div>
-                      ))}
+                      ))
+                    : showAIResults 
+                      ? aiRecommendedProperties.map((property) => (
+                          <div
+                            key={property.id}
+                            className={`flex border rounded-lg p-3 cursor-pointer hover:bg-gray-50 ${selectedProperty?.id === property.id ? 'border-emerald-500 bg-emerald-50' : ''}`}
+                            onClick={() => handlePropertyClick(property)}
+                          >
+                            <img
+                              src={property.imageUrl}
+                              alt={property.name}
+                              className="w-16 h-16 rounded object-cover mr-3"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center">
+                                <h4 className="font-medium text-emerald-700">{property.name}</h4>
+                                <span className="ml-2 bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">AI {property.aiScore}</span>
+                              </div>
+                              <p className="text-sm text-gray-600">{property.address}</p>
+                              <p className="text-sm font-semibold text-sky-600">{property.price}</p>
+                            </div>
+                            <button 
+                              onClick={(e) => toggleFavorite(property, e)}
+                              className="ml-2 text-gray-400 hover:text-red-500 focus:outline-none"
+                            >
+                              <Heart className="w-5 h-5" fill={property.isFavorite ? "currentColor" : "none"} />
+                            </button>
+                          </div>
+                        ))
+                      : properties.map((property) => (
+                          <div
+                            key={property.id}
+                            className={`flex border rounded-lg p-3 cursor-pointer hover:bg-gray-50 ${selectedProperty?.id === property.id ? 'border-emerald-500 bg-emerald-50' : ''}`}
+                            onClick={() => handlePropertyClick(property)}
+                          >
+                            <img
+                              src={property.imageUrl}
+                              alt={property.name}
+                              className="w-16 h-16 rounded object-cover mr-3"
+                            />
+                            <div className="flex-1">
+                              <h4 className="font-medium text-emerald-700">{property.name}</h4>
+                              <p className="text-sm text-gray-600">{property.address}</p>
+                              <p className="text-sm font-semibold text-sky-600">{property.price}</p>
+                            </div>
+                            <button 
+                              onClick={(e) => toggleFavorite(property, e)}
+                              className="ml-2 text-gray-400 hover:text-red-500 focus:outline-none"
+                            >
+                              <Heart className="w-5 h-5" fill={property.isFavorite ? "currentColor" : "none"} />
+                            </button>
+                          </div>
+                        ))}
                 </div>
+                {showFavorites && favorites.length === 0 && (
+                  <div className="bg-white rounded-lg shadow p-8 text-center">
+                    <p>찜한 매물이 없습니다.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -364,10 +438,22 @@ const Map = () => {
           )}
         </div>
         
-        {/* User profile button */}
-        <div className="absolute top-4 right-4 z-20">
-          <Button variant="outline" className="rounded-full w-10 h-10 p-0 bg-white border-emerald-300">
+        {/* User profile and favorites buttons */}
+        <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
+          <Button 
+            variant="outline" 
+            className="rounded-full w-10 h-10 p-0 bg-white border-emerald-300"
+            as={Link}
+            to="/mypage"
+          >
             <User size={20} className="text-sky-700" />
+          </Button>
+          <Button 
+            variant="outline" 
+            className={`rounded-full w-10 h-10 p-0 ${showFavorites ? 'bg-red-100 border-red-300' : 'bg-white border-emerald-300'}`}
+            onClick={() => setShowFavorites(!showFavorites)}
+          >
+            <Heart size={20} className={showFavorites ? 'text-red-500' : 'text-sky-700'} fill={showFavorites ? "currentColor" : "none"} />
           </Button>
         </div>
         
